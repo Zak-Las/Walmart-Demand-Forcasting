@@ -7,7 +7,7 @@ devices: 1
 drop_last_loader: false
 dropout_prob_theta: 0.2
 early_stop_patience_steps: 15
-enable_progress_bar: true
+enable_progress_bar: false
 exclude_insample_y: false
 futr_exog_list:
 - sell_price
@@ -64,8 +64,8 @@ loss: !!python/object:neuralforecast.losses.pytorch.MQLoss
           gAKKCmz8nEb5IGqoUBkugAJN6QMugAJ9cQAoWBAAAABwcm90b2NvbF92ZXJzaW9ucQFN6QNYDQAA
           AGxpdHRsZV9lbmRpYW5xAohYCgAAAHR5cGVfc2l6ZXNxA31xBChYBQAAAHNob3J0cQVLAlgDAAAA
           aW50cQZLBFgEAAAAbG9uZ3EHSwR1dS6AAihYBwAAAHN0b3JhZ2VxAGN0b3JjaApGbG9hdFN0b3Jh
-          Z2UKcQFYCwAAADE2MjQ3NDMyMjg4cQJYAwAAAGNwdXEDSwNOdHEEUS6AAl1xAFgLAAAAMTYyNDc0
-          MzIyODhxAWEuAwAAAAAAAAAAAAA/zcxMP2ZmZj8=
+          Z2UKcQFYCwAAADE2ODU3MjI4OTEycQJYAwAAAGNwdXEDSwNOdHEEUS6AAl1xAFgLAAAAMTY4NTcy
+          Mjg5MTJxAWEuAwAAAAAAAAAAAAA/zcxMP2ZmZj8=
       - 0
       - !!python/tuple
         - 3
