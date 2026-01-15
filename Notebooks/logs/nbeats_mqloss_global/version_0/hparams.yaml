@@ -55,7 +55,7 @@ logger: !!python/object:pytorch_lightning.loggers.csv_logs.CSVLogger
         _experiment: null
         _flush_logs_every_n_steps: 100
         _fs: *id001
-        _name: nbeats_mqloss_stable_full
+        _name: nbeats_mqloss_global
         _prefix: ''
         _root_dir: logs
         _save_dir: logs
@@ -91,8 +91,8 @@ logger: !!python/object:pytorch_lightning.loggers.csv_logs.CSVLogger
                 gAKKCmz8nEb5IGqoUBkugAJN6QMugAJ9cQAoWBAAAABwcm90b2NvbF92ZXJzaW9ucQFN6QNYDQAA
                 AGxpdHRsZV9lbmRpYW5xAohYCgAAAHR5cGVfc2l6ZXNxA31xBChYBQAAAHNob3J0cQVLAlgDAAAA
                 aW50cQZLBFgEAAAAbG9uZ3EHSwR1dS6AAihYBwAAAHN0b3JhZ2VxAGN0b3JjaApGbG9hdFN0b3Jh
-                Z2UKcQFYCwAAADE1ODQ5NDExNTA0cQJYAwAAAGNwdXEDSwNOdHEEUS6AAl1xAFgLAAAAMTU4NDk0
-                MTE1MDRxAWEuAwAAAAAAAAAAAAA/zcxMP2ZmZj8=
+                Z2UKcQFYCwAAADE1NTMyMzI0Nzg0cQJYAwAAAGNwdXEDSwNOdHEEUS6AAl1xAFgLAAAAMTU1MzIz
+                MjQ3ODRxAWEuAwAAAAAAAAAAAAA/zcxMP2ZmZj8=
             - 0
             - !!python/tuple
               - 3
@@ -154,9 +154,9 @@ logger: !!python/object:pytorch_lightning.loggers.csv_logs.CSVLogger
       valid_batch_size: null
       valid_loss: null
       windows_batch_size: 1024
-    log_dir: logs/nbeats_mqloss_stable_full/version_0
+    log_dir: logs/nbeats_mqloss_global/version_0
     metrics: []
-    metrics_file_path: logs/nbeats_mqloss_stable_full/version_0/metrics.csv
+    metrics_file_path: logs/nbeats_mqloss_global/version_0/metrics.csv
     metrics_keys:
     - epoch
     - ptl/val_loss
@@ -166,7 +166,7 @@ logger: !!python/object:pytorch_lightning.loggers.csv_logs.CSVLogger
     - valid_loss
   _flush_logs_every_n_steps: 100
   _fs: *id001
-  _name: nbeats_mqloss_stable_full
+  _name: nbeats_mqloss_global
   _prefix: ''
   _root_dir: logs
   _save_dir: logs
@@ -202,8 +202,8 @@ loss: !!python/object:neuralforecast.losses.pytorch.MQLoss
           gAKKCmz8nEb5IGqoUBkugAJN6QMugAJ9cQAoWBAAAABwcm90b2NvbF92ZXJzaW9ucQFN6QNYDQAA
           AGxpdHRsZV9lbmRpYW5xAohYCgAAAHR5cGVfc2l6ZXNxA31xBChYBQAAAHNob3J0cQVLAlgDAAAA
           aW50cQZLBFgEAAAAbG9uZ3EHSwR1dS6AAihYBwAAAHN0b3JhZ2VxAGN0b3JjaApGbG9hdFN0b3Jh
-          Z2UKcQFYCwAAADE2MTA3MjE2NjI0cQJYAwAAAGNwdXEDSwNOdHEEUS6AAl1xAFgLAAAAMTYxMDcy
-          MTY2MjRxAWEuAwAAAAAAAAAAAAA/zcxMP2ZmZj8=
+          Z2UKcQFYCwAAADE2MDE5MjIyOTc2cQJYAwAAAGNwdXEDSwNOdHEEUS6AAl1xAFgLAAAAMTYwMTky
+          MjI5NzZxAWEuAwAAAAAAAAAAAAA/zcxMP2ZmZj8=
       - 0
       - !!python/tuple
         - 3

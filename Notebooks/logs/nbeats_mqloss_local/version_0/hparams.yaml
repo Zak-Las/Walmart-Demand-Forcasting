@@ -28,7 +28,7 @@ logger: !!python/object:pytorch_lightning.loggers.csv_logs.CSVLogger
   - !!python/name:fsspec.implementations.local.LocalFileSystem ''
   - !!python/tuple []
   - {}
-  _name: nbeats_mql
+  _name: nbeats_mqloss_local
   _prefix: ''
   _root_dir: logs
   _save_dir: logs
@@ -64,8 +64,8 @@ loss: !!python/object:neuralforecast.losses.pytorch.MQLoss
           gAKKCmz8nEb5IGqoUBkugAJN6QMugAJ9cQAoWBAAAABwcm90b2NvbF92ZXJzaW9ucQFN6QNYDQAA
           AGxpdHRsZV9lbmRpYW5xAohYCgAAAHR5cGVfc2l6ZXNxA31xBChYBQAAAHNob3J0cQVLAlgDAAAA
           aW50cQZLBFgEAAAAbG9uZ3EHSwR1dS6AAihYBwAAAHN0b3JhZ2VxAGN0b3JjaApGbG9hdFN0b3Jh
-          Z2UKcQFYCgAAADYzODU5Mjk0NTZxAlgDAAAAY3B1cQNLA050cQRRLoACXXEAWAoAAAA2Mzg1OTI5
-          NDU2cQFhLgMAAAAAAAAAAAAAP83MTD9mZmY/
+          Z2UKcQFYCwAAADE1ODExODk2MzA0cQJYAwAAAGNwdXEDSwNOdHEEUS6AAl1xAFgLAAAAMTU4MTE4
+          OTYzMDRxAWEuAwAAAAAAAAAAAAA/zcxMP2ZmZj8=
       - 0
       - !!python/tuple
         - 3
