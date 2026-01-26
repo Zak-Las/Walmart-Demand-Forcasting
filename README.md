@@ -51,7 +51,10 @@ Notes:
 
 - Environment:
 	- Create the conda env from `environment.yml`.
-	- If running scripts outside notebooks, set `PYTHONPATH` to the repo root so `src.*` imports work.
+	- Recommended: install the package in editable mode so imports work everywhere:
+		- `pip install -e .`
+	- If you don’t want to install the package, you can still run the notebooks as-is (they add `../src` to `sys.path`).
+	- If running scripts without an editable install, set `PYTHONPATH=src` so `walmart_demand_forecasting.*` imports work.
 
 ## Planned next steps
 
@@ -67,5 +70,5 @@ Notes:
 ## Repo structure (high-level)
 
 - `Notebooks/`: narrative + orchestration (portfolio-friendly).
-- `src/m5/`: reusable helpers (loading/splitting/features/metrics + LightGBM + NeuralForecast/N‑BEATSx utilities).
+- `src/walmart_demand_forecasting/`: reusable helpers (datasets/features/evaluation + LightGBM + N‑BEATSx utilities).
 - `data/`: M5 dataset files.
