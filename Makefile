@@ -33,7 +33,8 @@ nb_global:
 	jupyter nbconvert --to notebook --execute Notebooks/02_global_scale.ipynb --output /tmp/02_global_scale.executed.ipynb
 
 test:
-	pytest -q
+	$(PYTHON) -m pip install -e .
+	$(PYTHON) -m pytest -q
 
 lint:
 	ruff check src tests

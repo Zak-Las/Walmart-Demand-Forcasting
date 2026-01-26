@@ -53,12 +53,25 @@ Notes:
 	- Create the conda env from `environment.yml`.
 	- Recommended: install the package in editable mode so imports work everywhere:
 		- `pip install -e .`
-	- If you don’t want to install the package, you can still run the notebooks as-is (they add `../src` to `sys.path`).
-	- If running scripts without an editable install, set `PYTHONPATH=src` so `walmart_demand_forecasting.*` imports work.
+	- **Notebook kernel note:** notebooks run in the currently selected Jupyter kernel. If the kernel is not the same environment where you installed the package, imports may fail.
+		- The notebooks include a small “editable install if missing” setup cell to self-heal when `walmart_demand_forecasting` is not importable in that kernel.
+
+	## Tests
+
+	This repo includes a small, fast unit test suite focused on the reusable helpers (features, splits, metrics, and CSV memory squeezing).
+
+	- Recommended (ensures editable install first):
+		- `make test`
+	- Direct (if you already did an editable install):
+		- `python -m pytest -q`
+
+	Notes:
+	- `make test` runs `python -m pip install -e .` and then `python -m pytest -q` using the same interpreter.
+	- Tests are designed to be lightweight (no full model training).
 
 ## Planned next steps
 
-- Add unit tests around data loading, feature generation, and scoring.
+- Expand unit test coverage (datasets + model helper edges).
 - Add a small CLI or runner script for reproducible training/inference without opening notebooks.
 - Deploy the global N‑BEATSx inference path as a lightweight API (planned target: **AWS Lambda**, with model artifacts stored in object storage).
 
@@ -69,6 +82,27 @@ Notes:
 
 ## Repo structure (high-level)
 
-- `Notebooks/`: narrative + orchestration (portfolio-friendly).
-- `src/walmart_demand_forecasting/`: reusable helpers (datasets/features/evaluation + LightGBM + N‑BEATSx utilities).
-- `data/`: M5 dataset files.
+
+This repo uses a **src-layout** installable package plus **notebook-first** narrative.
+
+- `Notebooks/`: narrative + orchestration (portfolio-friendly)
+	- `01_local_dynamics.ipynb`: Act 1 (local CA-FOODS baseline vs N-BEATSx)
+	- `02_global_scale.ipynb`: Act 2 (full-panel RAM-aware pipeline + global models)
+- `src/walmart_demand_forecasting/`: reusable code (import as `walmart_demand_forecasting.*`)
+	- `datasets/m5.py`: M5 loaders (CA-FOODS + global) and `Paths` defaults
+	- `features/m5_features.py`: feature engineering (lags, rolling means, time features)
+	- `evaluation/split.py`: contiguous split helpers used in notebooks
+	- `evaluation/metrics.py`: RMSE + item-level WRMSSE helper (`compute_item_level_wrmsse`)
+	- `models/lgbm/`: Optuna tuning + training + inference helpers
+	- `models/nbeatsx/`: NeuralForecast/NBEATSx pipeline helpers + logging utilities
+	- `visualization/`: plotting helpers (e.g., Lightning CSV learning curves)
+- `data/`: M5 dataset files (CSV)
+- `model_saves/`: will be used to save the global models (not tracked by Git)
+- `environment.yml`: conda environment definition (most runtime deps live here)
+- `pyproject.toml`: minimal packaging metadata for editable installs
+
+### Data & code flow (conceptual)
+- Notebooks call loaders in `walmart_demand_forecasting.datasets.m5` to produce model-ready panels.
+- Feature engineering happens via `walmart_demand_forecasting.features.m5_features`.
+- Splits + reporting metrics come from `walmart_demand_forecasting.evaluation.*`.
+- Models are trained/evaluated via `walmart_demand_forecasting.models.lgbm.*` and `walmart_demand_forecasting.models.nbeatsx.*`.
