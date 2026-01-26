@@ -29,6 +29,7 @@ credentials.json
 # IDE and OS-specific files
 .idea/
 .vscode/
+.github/
 .DS_Store
 Thumbs.db
 
@@ -36,6 +37,7 @@ Thumbs.db
 *.pt
 *.pth
 *.ckpt
+
 # Exclude training artifacts and intermediate model directories
 artifacts/
 notebooks/artifacts/
