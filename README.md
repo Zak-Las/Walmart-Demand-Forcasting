@@ -56,18 +56,36 @@ Notes:
 	- **Notebook kernel note:** notebooks run in the currently selected Jupyter kernel. If the kernel is not the same environment where you installed the package, imports may fail.
 		- The notebooks include a small “editable install if missing” setup cell to self-heal when `walmart_demand_forecasting` is not importable in that kernel.
 
-	## Tests
+## Data (M5 download)
 
-	This repo includes a small, fast unit test suite focused on the reusable helpers (features, splits, metrics, and CSV memory squeezing).
+This repo expects the core M5 CSVs to exist in the repo-root `data/` folder.
 
-	- Recommended (ensures editable install first):
-		- `make test`
-	- Direct (if you already did an editable install):
-		- `python -m pytest -q`
+- Download via Kaggle (recommended):
+	- `make download_m5`
+- Verify required files exist:
+	- `make verify_m5`
 
-	Notes:
-	- `make test` runs `python -m pip install -e .` and then `python -m pytest -q` using the same interpreter.
-	- Tests are designed to be lightweight (no full model training).
+Notes:
+- You must have Kaggle credentials at `~/.kaggle/kaggle.json` and have accepted the competition rules.
+- `data/` is intentionally gitignored (raw data should not be committed).
+
+## Tests
+
+This repo includes a small, fast unit test suite focused on the reusable helpers (features, splits, metrics, and CSV memory squeezing).
+
+- Recommended (ensures editable install first):
+	- `make test`
+- Direct (if you already did an editable install):
+	- `python -m pytest -q`
+
+Notes:
+- `make test` runs `python -m pip install -e .` and then `python -m pytest -q` using the same interpreter.
+- Tests are designed to be lightweight (no full model training).
+
+## Artifacts
+
+Training logs and saved model artifacts live under `Artifacts/` (e.g., `Artifacts/logs/` and `Artifacts/model_saves/`).
+These are intentionally not committed to Git.
 
 ## Planned next steps
 
@@ -89,7 +107,7 @@ This repo uses a **src-layout** installable package plus **notebook-first** narr
 	- `01_local_dynamics.ipynb`: Act 1 (local CA-FOODS baseline vs N-BEATSx)
 	- `02_global_scale.ipynb`: Act 2 (full-panel RAM-aware pipeline + global models)
 - `src/walmart_demand_forecasting/`: reusable code (import as `walmart_demand_forecasting.*`)
-	- `datasets/m5.py`: M5 loaders (CA-FOODS + global) and `Paths` defaults
+	- `datasets/m5_loaders.py`: M5 loaders (CA-FOODS + global) and `Paths` defaults
 	- `features/m5_features.py`: feature engineering (lags, rolling means, time features)
 	- `evaluation/split.py`: contiguous split helpers used in notebooks
 	- `evaluation/metrics.py`: RMSE + item-level WRMSSE helper (`compute_item_level_wrmsse`)
@@ -97,12 +115,12 @@ This repo uses a **src-layout** installable package plus **notebook-first** narr
 	- `models/nbeatsx/`: NeuralForecast/NBEATSx pipeline helpers + logging utilities
 	- `visualization/`: plotting helpers (e.g., Lightning CSV learning curves)
 - `data/`: M5 dataset files (CSV)
-- `model_saves/`: will be used to save the global models (not tracked by Git)
+- `Artifacts/`: local artifacts (training logs + saved models; not tracked by Git)
 - `environment.yml`: conda environment definition (most runtime deps live here)
 - `pyproject.toml`: minimal packaging metadata for editable installs
 
 ### Data & code flow (conceptual)
-- Notebooks call loaders in `walmart_demand_forecasting.datasets.m5` to produce model-ready panels.
+- Notebooks call loaders in `walmart_demand_forecasting.datasets.m5_loaders` to produce model-ready panels.
 - Feature engineering happens via `walmart_demand_forecasting.features.m5_features`.
 - Splits + reporting metrics come from `walmart_demand_forecasting.evaluation.*`.
 - Models are trained/evaluated via `walmart_demand_forecasting.models.lgbm.*` and `walmart_demand_forecasting.models.nbeatsx.*`.
