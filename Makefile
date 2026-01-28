@@ -2,7 +2,7 @@
 # Purpose: fast local reproducibility (env, notebooks, QA)
 # This repo is notebook-first; scripts/modules are introduced during refactoring.
 
-.PHONY: help env update nb_local nb_global test lint format clean
+.PHONY: help env update nb_local nb_global test lint format clean download_m5 verify_m5 repair_m5
 
 PYTHON?=python
 
@@ -14,6 +14,9 @@ help:
 	"nb_local" "Execute Act 1 notebook (local dynamics)" \
 	"nb_global" "Execute Act 2 notebook (global scale)" \
 	"test" "Run pytest suite" \
+	"download_m5" "Download M5 CSVs into data/ via Kaggle" \
+	"verify_m5" "Verify required M5 CSVs exist and are real CSVs" \
+	"repair_m5" "Repair data/: unzip *.zip and fix ZIP-as-CSV" \
 	"lint" "Ruff static checks" \
 	"format" "Black code format" \
 	"clean" "Remove caches & transient artifacts";
@@ -35,6 +38,15 @@ nb_global:
 test:
 	$(PYTHON) -m pip install -e .
 	$(PYTHON) -m pytest -q
+
+download_m5:
+	$(PYTHON) -m walmart_demand_forecasting.datasets.download_m5 --output data/
+
+verify_m5:
+	$(PYTHON) -m walmart_demand_forecasting.datasets.download_m5 --output data/ --verify
+
+repair_m5:
+	$(PYTHON) -m walmart_demand_forecasting.datasets.download_m5 --output data/ --repair
 
 lint:
 	ruff check src tests
