@@ -7,6 +7,34 @@ import pandas as pd
 from walmart_demand_forecasting.evaluation.metrics import rmse
 
 
+def default_lightning_accelerator(*, prefer_mps: bool = True) -> str:
+    """Return a sensible PyTorch Lightning accelerator for the current machine.
+
+    Intended for laptop-friendly reproducibility:
+    - Uses Apple Silicon MPS when available (if prefer_mps=True)
+    - Otherwise uses CUDA when available
+    - Falls back to CPU
+
+    This keeps training code portable across macOS (MPS), Linux/Windows (CUDA), and CPU-only.
+    """
+
+    try:
+        import torch
+    except Exception:
+        return "cpu"
+
+    mps_ok = bool(getattr(torch.backends, "mps", None)) and torch.backends.mps.is_available()
+    cuda_ok = torch.cuda.is_available()
+
+    if prefer_mps and mps_ok:
+        return "mps"
+    if cuda_ok:
+        return "cuda"
+    if mps_ok:
+        return "mps"
+    return "cpu"
+
+
 def reset_logs_dir(log_dir: str) -> None:
     """Delete a Lightning log directory if it exists.
 
