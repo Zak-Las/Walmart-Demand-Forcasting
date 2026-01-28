@@ -1,6 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*.pytest_cache
 *.so
 
 # Packaging/build artifacts
@@ -11,6 +12,10 @@ __pycache__/
 venv/
 env/
 model_saves/
+logs/
+
+# Local artifacts (models, logs, runs)
+Artifacts/
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
@@ -45,6 +50,10 @@ Thumbs.db
 artifacts/
 notebooks/artifacts/
 notebooks/lightning_logs/
+
+# Notebook training logs (case-sensitive paths)
+Notebooks/logs/
+Notebooks/lightning_logs/
 
 # Figures
 # figures/
