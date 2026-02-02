@@ -2,7 +2,7 @@
 # Purpose: fast local reproducibility (env, notebooks, QA)
 # This repo is notebook-first; scripts/modules are introduced during refactoring.
 
-.PHONY: help env update nb_local nb_global test lint format clean download_m5 verify_m5 repair_m5
+.PHONY: help env update nb_local nb_global run_local run_global smoke test lint format clean download_m5 verify_m5 repair_m5
 
 PYTHON?=python
 
@@ -13,6 +13,9 @@ help:
 	"update" "Update/prune existing env" \
 	"nb_local" "Execute Act 1 notebook (local dynamics)" \
 	"nb_global" "Execute Act 2 notebook (global scale)" \
+	"run_local" "Terminal-only Act 1 repro (LightGBM + N-BEATSx)" \
+	"run_global" "Terminal-only Act 2 repro (LightGBM + N-BEATSx)" \
+	"smoke" "Fast terminal-only smoke run (reduced compute)" \
 	"test" "Run pytest suite" \
 	"download_m5" "Download M5 CSVs into data/ via Kaggle" \
 	"verify_m5" "Verify required M5 CSVs exist and are real CSVs" \
@@ -34,6 +37,21 @@ nb_local:
 nb_global:
 	@command -v jupyter >/dev/null 2>&1 || { echo 'jupyter not found (pip install jupyter)'; exit 1; }
 	jupyter nbconvert --to notebook --execute Notebooks/02_global_scale.ipynb --output /tmp/02_global_scale.executed.ipynb
+
+run_local:
+	$(PYTHON) -m pip install -e .
+	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/local.toml local-lgbm
+	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/local.toml local-nbeatsx
+
+run_global:
+	$(PYTHON) -m pip install -e .
+	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/global.toml global-lgbm
+	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/global.toml global-nbeatsx
+
+smoke:
+	$(PYTHON) -m pip install -e .
+	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/smoke.toml --run-name smoke_local_lgbm local-lgbm
+	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/smoke.toml --run-name smoke_local_nbeatsx local-nbeatsx
 
 test:
 	$(PYTHON) -m pip install -e .
