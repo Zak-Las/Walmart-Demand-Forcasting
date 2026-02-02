@@ -2,7 +2,11 @@
 # Purpose: fast local reproducibility (env, notebooks, QA)
 # This repo is notebook-first; scripts/modules are introduced during refactoring.
 
-.PHONY: help env update nb_local nb_global run_local run_global smoke test lint format clean download_m5 verify_m5 repair_m5
+.PHONY: help env update nb_local nb_global \
+	run_local run_global \
+	run_local_lgbm run_local_nbeatsx run_global_lgbm run_global_nbeatsx \
+	show_local_lgbm show_local_nbeatsx show_global_lgbm show_global_nbeatsx \
+	smoke test lint format clean download_m5 verify_m5 repair_m5
 
 PYTHON?=python
 
@@ -15,6 +19,14 @@ help:
 	"nb_global" "Execute Act 2 notebook (global scale)" \
 	"run_local" "Terminal-only Act 1 repro (LightGBM + N-BEATSx)" \
 	"run_global" "Terminal-only Act 2 repro (LightGBM + N-BEATSx)" \
+	"run_local_lgbm" "Terminal-only local LightGBM repro" \
+	"run_local_nbeatsx" "Terminal-only local N-BEATSx repro" \
+	"run_global_lgbm" "Terminal-only global LightGBM repro" \
+	"run_global_nbeatsx" "Terminal-only global N-BEATSx repro" \
+	"show_local_lgbm" "Print metrics/timing for last local LightGBM run" \
+	"show_local_nbeatsx" "Print metrics/timing for last local N-BEATSx run" \
+	"show_global_lgbm" "Print metrics/timing for last global LightGBM run" \
+	"show_global_nbeatsx" "Print metrics/timing for last global N-BEATSx run" \
 	"smoke" "Fast terminal-only smoke run (reduced compute)" \
 	"test" "Run pytest suite" \
 	"download_m5" "Download M5 CSVs into data/ via Kaggle" \
@@ -43,10 +55,66 @@ run_local:
 	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/local.toml local-lgbm
 	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/local.toml local-nbeatsx
 
+run_local_lgbm:
+	$(PYTHON) -m pip install -e .
+	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/local.toml local-lgbm
+
+run_local_nbeatsx:
+	$(PYTHON) -m pip install -e .
+	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/local.toml local-nbeatsx
+
 run_global:
 	$(PYTHON) -m pip install -e .
 	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/global.toml global-lgbm
 	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/global.toml global-nbeatsx
+
+run_global_lgbm:
+	$(PYTHON) -m pip install -e .
+	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/global.toml global-lgbm
+
+run_global_nbeatsx:
+	$(PYTHON) -m pip install -e .
+	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/global.toml global-nbeatsx
+
+show_local_lgbm:
+	@f=$$(ls -1t Artifacts/runs/*/metrics_local_lgbm.json 2>/dev/null | head -n 1); \
+	if [ -z "$$f" ]; then echo "No local LightGBM metrics found under Artifacts/runs/*/metrics_local_lgbm.json"; exit 1; fi; \
+	d=$$(dirname "$$f"); \
+	echo "Run dir: $$d"; \
+	echo "Metrics: $$f"; \
+	cat "$$f"; \
+	if [ -f "$$d/timing.json" ]; then echo "---"; echo "Timing: $$d/timing.json"; cat "$$d/timing.json"; fi; \
+	if [ -f "$$d/run_meta.json" ]; then echo "---"; echo "Run meta: $$d/run_meta.json"; cat "$$d/run_meta.json"; fi
+
+show_local_nbeatsx:
+	@f=$$(ls -1t Artifacts/runs/*/metrics_local_nbeatsx.json 2>/dev/null | head -n 1); \
+	if [ -z "$$f" ]; then echo "No local N-BEATSx metrics found under Artifacts/runs/*/metrics_local_nbeatsx.json"; exit 1; fi; \
+	d=$$(dirname "$$f"); \
+	echo "Run dir: $$d"; \
+	echo "Metrics: $$f"; \
+	cat "$$f"; \
+	if [ -f "$$d/timing.json" ]; then echo "---"; echo "Timing: $$d/timing.json"; cat "$$d/timing.json"; fi; \
+	if [ -f "$$d/run_meta.json" ]; then echo "---"; echo "Run meta: $$d/run_meta.json"; cat "$$d/run_meta.json"; fi
+
+show_global_lgbm:
+	@f=$$(ls -1t Artifacts/runs/*/metrics_global_lgbm.json 2>/dev/null | head -n 1); \
+	if [ -z "$$f" ]; then echo "No global LightGBM metrics found under Artifacts/runs/*/metrics_global_lgbm.json"; exit 1; fi; \
+	d=$$(dirname "$$f"); \
+	echo "Run dir: $$d"; \
+	echo "Metrics: $$f"; \
+	cat "$$f"; \
+	if [ -f "$$d/timing.json" ]; then echo "---"; echo "Timing: $$d/timing.json"; cat "$$d/timing.json"; fi; \
+	if [ -f "$$d/run_meta.json" ]; then echo "---"; echo "Run meta: $$d/run_meta.json"; cat "$$d/run_meta.json"; fi
+
+show_global_nbeatsx:
+	@f=$$(ls -1t Artifacts/runs/*/metrics_global_nbeatsx.json 2>/dev/null | head -n 1); \
+	if [ -z "$$f" ]; then echo "No global N-BEATSx metrics found under Artifacts/runs/*/metrics_global_nbeatsx.json"; exit 1; fi; \
+	d=$$(dirname "$$f"); \
+	echo "Run dir: $$d"; \
+	echo "Metrics: $$f"; \
+	cat "$$f"; \
+	if [ -f "$$d/timing.json" ]; then echo "---"; echo "Timing: $$d/timing.json"; cat "$$d/timing.json"; fi; \
+	if [ -f "$$d/run_meta.json" ]; then echo "---"; echo "Run meta: $$d/run_meta.json"; cat "$$d/run_meta.json"; fi
 
 smoke:
 	$(PYTHON) -m pip install -e .
