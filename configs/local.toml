@@ -1,0 +1,53 @@
+[paths]
+# Folder containing calendar.csv, sell_prices.csv, sales_train_evaluation.csv
+m5_input_dir = "data"
+
+[local.lgbm]
+horizon = 28
+start_day = 1000
+seed = 42
+
+lags = [28, 35, 42, 49]
+rolling_shift = 28
+rolling_windows = [7, 28, 49]
+
+# Tuning (Optuna)
+tune = true
+tune_frac = 0.1
+n_trials = 10
+nfold = 3
+num_boost_round_cv = 300
+
+# Final training (LightGBM)
+objective = "tweedie"
+metric = "rmse"
+num_boost_round = 1200
+early_stopping_rounds = 100
+log_evaluation = 50
+
+[local.nbeatsx]
+horizon = 28
+start_day = 1000
+alias = "NBEATSx_MQLoss_Local"
+log_name = "nbeats_mqloss_local"
+prefer_mps = true
+
+freq = "D"
+input_size = 370
+scaler_type = "robust"
+max_steps = 4000
+val_size = 28
+val_check_steps = 100
+early_stop_patience_steps = 15
+dropout_prob_theta = 0.2
+batch_size = 256
+devices = 1
+enable_progress_bar = false
+exclude_insample_y = false
+keep_full_history = true
+
+learning_rate = 0.0005
+quantiles = [0.5, 0.8, 0.9]
+
+# Local CA-FOODS uses snap_CA rather than snap_active
+futr_exog_list = ["sell_price", "is_available", "snap_CA", "is_event"]

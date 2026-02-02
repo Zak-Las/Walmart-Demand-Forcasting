@@ -1,0 +1,49 @@
+[paths]
+m5_input_dir = "data"
+
+# Fast, end-to-end wiring check.
+# Intentionally NOT tuned to match notebook metrics.
+
+[local.lgbm]
+horizon = 28
+start_day = 1000
+seed = 42
+
+lags = [28]
+rolling_shift = 28
+rolling_windows = [7]
+
+tune = false
+fixed_params = { learning_rate = 0.05, tweedie_variance_power = 1.2, num_leaves = 63 }
+
+objective = "tweedie"
+metric = "rmse"
+num_boost_round = 60
+early_stopping_rounds = 10
+log_evaluation = 10
+
+[local.nbeatsx]
+horizon = 28
+start_day = 1000
+alias = "NBEATSx_MQLoss_Local_Smoke"
+log_name = "nbeats_mqloss_local_smoke"
+prefer_mps = true
+
+freq = "D"
+input_size = 64
+scaler_type = "robust"
+max_steps = 50
+val_size = 28
+val_check_steps = 25
+early_stop_patience_steps = 5
+dropout_prob_theta = 0.1
+batch_size = 64
+devices = 1
+enable_progress_bar = false
+exclude_insample_y = false
+keep_full_history = true
+
+learning_rate = 0.001
+quantiles = [0.5, 0.9]
+
+futr_exog_list = ["sell_price", "is_available", "snap_CA", "is_event"]
