@@ -14,14 +14,15 @@ rolling_windows = [7, 28, 49]
 # Tuning (Optuna)
 tune = true
 tune_frac = 0.1
-n_trials = 10
+n_trials = 15
 nfold = 3
-num_boost_round_cv = 300
+num_boost_round_cv = 500
+study_name = "M5_LGBM_Local"
 
 # Final training (LightGBM)
 objective = "tweedie"
 metric = "rmse"
-num_boost_round = 1200
+num_boost_round = 1500
 early_stopping_rounds = 100
 log_evaluation = 50
 
@@ -33,20 +34,20 @@ log_name = "nbeats_mqloss_local"
 prefer_mps = true
 
 freq = "D"
-input_size = 370
+input_size = 364
 scaler_type = "robust"
-max_steps = 4000
+max_steps = 3500
 val_size = 28
-val_check_steps = 100
-early_stop_patience_steps = 15
+val_check_steps = 12
+early_stop_patience_steps = 20
 dropout_prob_theta = 0.2
-batch_size = 256
+batch_size = 512
 devices = 1
 enable_progress_bar = false
 exclude_insample_y = false
-keep_full_history = true
+keep_full_history = false
 
-learning_rate = 0.0005
+learning_rate = 0.0001
 quantiles = [0.5, 0.8, 0.9]
 
 # Local CA-FOODS uses snap_CA rather than snap_active

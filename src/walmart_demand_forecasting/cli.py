@@ -516,6 +516,8 @@ def _run_local_lgbm(*, cfg: dict[str, Any], paths: RunPaths) -> None:
     )
 
     df = df.dropna(subset=lag_cols + rolling_cols)
+    # Match notebook: preserve time structure and keep a stable row order.
+    df = df.sort_values(["id", "d_int"]).reset_index(drop=True)
     df["date"] = pd.to_datetime(df["date"])
 
     split = contiguous_day_split(df, horizon=horizon, d_int_col="d_int")
@@ -644,8 +646,8 @@ def _run_local_nbeatsx(*, cfg: dict[str, Any], paths: RunPaths) -> None:
     m5_paths = M5Paths(input_dir=m5_input_dir)
 
     print("Loading local (CA-FOODS) NeuralForecast dataset...")
-    # `load_ca_foods_nf` requires an int start_day; use a very early cutoff for "full history".
-    keep_full_history = bool(params.get("keep_full_history", True))
+    # Match notebook: load starting at `start_day` (this also matches how sell_price is filled).
+    keep_full_history = bool(params.get("keep_full_history", False))
     loader_start_day = 1 if keep_full_history else start_day
     m5_df = load_ca_foods_nf(start_day=loader_start_day, paths=m5_paths)
 
