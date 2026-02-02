@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -12,7 +13,10 @@ from typing import Any
 try:
     import tomllib  # py311+
 except ModuleNotFoundError:  # pragma: no cover
-    tomllib = None  # type: ignore[assignment]
+    try:
+        import tomli as tomllib  # type: ignore[assignment]
+    except ModuleNotFoundError:  # pragma: no cover
+        tomllib = None  # type: ignore[assignment]
 
 
 @dataclass(frozen=True)
@@ -25,7 +29,11 @@ class RunPaths:
 
 def _load_toml(path: Path) -> dict[str, Any]:
     if tomllib is None:  # pragma: no cover
-        raise RuntimeError("tomllib unavailable; requires Python 3.11+")
+        raise RuntimeError(
+            "TOML support is unavailable.\n\n"
+            "Fix: either use Python 3.11+ (built-in `tomllib`) or install the backport:\n"
+            "  pip install tomli\n"
+        )
     with path.open("rb") as f:
         return tomllib.load(f)
 
@@ -140,6 +148,8 @@ def _run_global_lgbm(*, cfg: dict[str, Any], paths: RunPaths) -> None:
 
     from walmart_demand_forecasting.datasets.m5_loaders import Paths as M5Paths
     from walmart_demand_forecasting.datasets.m5_loaders import load_global_lgbm
+    from walmart_demand_forecasting.datasets.m5_loaders import load_global_nf
+    from walmart_demand_forecasting.evaluation.metrics import compute_item_level_wrmsse
     from walmart_demand_forecasting.evaluation.split import contiguous_day_split
     from walmart_demand_forecasting.features.m5_features import (
         add_cyclical_time_features,
@@ -285,8 +295,21 @@ def _run_global_lgbm(*, cfg: dict[str, Any], paths: RunPaths) -> None:
     preds_path = paths.preds_dir / "lgbm_global_predictions.csv.gz"
     df_preds.to_csv(preds_path, index=False, compression="gzip")
 
+    print("Computing global item-level WRMSSE (Level 12)...")
+    # Use the NF-shaped loader for WRMSSE since it carries `is_available`.
+    m5_df_full = load_global_nf(start_day=None, paths=m5_paths)
+    m5_for_wrmsse = m5_df_full[["unique_id", "ds", "y", "sell_price", "is_available"]]
+    wrmsse_lgbm = compute_item_level_wrmsse(
+        m5_df=m5_for_wrmsse,
+        score_df=df_preds,
+        horizon=horizon,
+        pred_cols={"LightGBM": "lgbm_pred"},
+        return_weights=False,
+    )["LightGBM"]
+
     metrics = {
         "rmse": float(rmse_value),
+        "wrmsse_item_level": float(wrmsse_lgbm),
         "horizon": horizon,
         "start_day": start_day,
         "buffer": buffer,
@@ -295,7 +318,15 @@ def _run_global_lgbm(*, cfg: dict[str, Any], paths: RunPaths) -> None:
     _write_json(paths.run_dir / "metrics_global_lgbm.json", metrics)
     _write_json(paths.run_dir / "params_global_lgbm.json", final_params)
 
-    _print_kv("Global LightGBM complete:", {"rmse": metrics["rmse"], "model": str(model_path), "preds": str(preds_path)})
+    _print_kv(
+        "Global LightGBM complete:",
+        {
+            "rmse": metrics["rmse"],
+            "wrmsse_item_level": metrics["wrmsse_item_level"],
+            "model": str(model_path),
+            "preds": str(preds_path),
+        },
+    )
 
 
 def _run_global_nbeatsx(*, cfg: dict[str, Any], paths: RunPaths) -> None:
@@ -416,7 +447,7 @@ def _run_global_nbeatsx(*, cfg: dict[str, Any], paths: RunPaths) -> None:
     results.to_csv(preds_path, index=False, compression="gzip")
 
     wrmsse = compute_item_level_wrmsse(
-        m5_df=Y_df.drop(columns=["d_int"]),
+        m5_df=Y_df[["unique_id", "ds", "y", "sell_price", "is_available"]],
         score_df=results,
         horizon=horizon,
         pred_cols={"N-BEATSx": pred_col},
@@ -586,7 +617,6 @@ def _run_local_nbeatsx(*, cfg: dict[str, Any], paths: RunPaths) -> None:
 
     from walmart_demand_forecasting.datasets.m5_loaders import Paths as M5Paths
     from walmart_demand_forecasting.datasets.m5_loaders import load_ca_foods_nf
-    from walmart_demand_forecasting.evaluation.metrics import compute_item_level_wrmsse
     from walmart_demand_forecasting.evaluation.split import split_date_for_last_horizon, train_test_split_by_date
     from walmart_demand_forecasting.models.nbeatsx.pipeline import (
         default_lightning_accelerator,
@@ -684,17 +714,8 @@ def _run_local_nbeatsx(*, cfg: dict[str, Any], paths: RunPaths) -> None:
     preds_path = paths.preds_dir / "nbeatsx_local_predictions.csv.gz"
     results.to_csv(preds_path, index=False, compression="gzip")
 
-    # wrmsse = compute_item_level_wrmsse(
-    #     m5_df=Y_df.drop(columns=["d_int"]),
-    #     score_df=results,
-    #     horizon=horizon,
-    #     pred_cols={"N-BEATSx": pred_col},
-    #     return_weights=False,
-    # )["N-BEATSx"]
-
     metrics = {
         "rmse": float(rmse_value),
-        # "wrmsse_item_level": float(wrmsse),
         "horizon": horizon,
         "start_day": start_day,
         "alias": alias,
@@ -766,10 +787,13 @@ def main(argv: list[str] | None = None) -> int:
     run_name = args.run_name or _now_run_id(args.command.replace("_", "-"))
     run_paths = _ensure_run_dirs(artifacts_dir=artifacts_dir, run_name=run_name)
 
+    start_utc = datetime.utcnow().isoformat() + "Z"
+    t0 = time.perf_counter()
+
     meta = {
         "run_name": run_name,
         "command": args.command,
-        "utc": datetime.utcnow().isoformat() + "Z",
+        "start_utc": start_utc,
         "cwd": os.getcwd(),
         "git_sha": _maybe_git_sha(),
         "config": str(config_path) if config_path else None,
@@ -779,16 +803,53 @@ def main(argv: list[str] | None = None) -> int:
     # Persist the merged config for traceability
     _write_json(run_paths.run_dir / "config_resolved.json", cfg)
 
-    if args.command == "global-lgbm":
-        _run_global_lgbm(cfg=cfg, paths=run_paths)
-    elif args.command == "global-nbeatsx":
-        _run_global_nbeatsx(cfg=cfg, paths=run_paths)
-    elif args.command == "local-lgbm":
-        _run_local_lgbm(cfg=cfg, paths=run_paths)
-    elif args.command == "local-nbeatsx":
-        _run_local_nbeatsx(cfg=cfg, paths=run_paths)
-    else:  # pragma: no cover
-        raise ValueError(f"Unknown command: {args.command}")
+    status = "success"
+    exc_type: str | None = None
+    exc_message: str | None = None
+
+    try:
+        if args.command == "global-lgbm":
+            _run_global_lgbm(cfg=cfg, paths=run_paths)
+        elif args.command == "global-nbeatsx":
+            _run_global_nbeatsx(cfg=cfg, paths=run_paths)
+        elif args.command == "local-lgbm":
+            _run_local_lgbm(cfg=cfg, paths=run_paths)
+        elif args.command == "local-nbeatsx":
+            _run_local_nbeatsx(cfg=cfg, paths=run_paths)
+        else:  # pragma: no cover
+            raise ValueError(f"Unknown command: {args.command}")
+    except Exception as exc:
+        status = "error"
+        exc_type = type(exc).__name__
+        exc_message = str(exc)
+        raise
+    finally:
+        t1 = time.perf_counter()
+        end_utc = datetime.utcnow().isoformat() + "Z"
+        duration_seconds = float(t1 - t0)
+
+        meta_out = dict(meta)
+        meta_out.update(
+            {
+                "end_utc": end_utc,
+                "duration_seconds": duration_seconds,
+                "status": status,
+                "error_type": exc_type,
+                "error_message": exc_message,
+            }
+        )
+        _write_json(run_paths.run_dir / "run_meta.json", meta_out)
+        _write_json(
+            run_paths.run_dir / "timing.json",
+            {
+                "command": args.command,
+                "start_utc": start_utc,
+                "end_utc": end_utc,
+                "duration_seconds": duration_seconds,
+                "status": status,
+            },
+        )
+        print(f"\nElapsed: {duration_seconds:.2f}s")
 
     print(f"\nRun artifacts: {run_paths.run_dir}")
     return 0
