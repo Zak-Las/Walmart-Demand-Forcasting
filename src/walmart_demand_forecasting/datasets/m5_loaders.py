@@ -73,6 +73,8 @@ def load_ca_foods_lgbm(start_day: int = 1000, paths: Paths = Paths()) -> tuple[p
 
     df_sales = df_sales[(df_sales["state_id"] == "CA") & (df_sales["cat_id"] == "FOODS")]
 
+    # Keep all identifier columns as id_vars so `pd.melt` only melts day columns.
+    # We'll drop constant columns (`cat_id`, `state_id`) after melting.
     id_vars = ["id", "item_id", "dept_id", "cat_id", "store_id", "state_id"]
     df = pd.melt(df_sales, id_vars=id_vars, var_name="d", value_name="sales")
 
@@ -99,6 +101,10 @@ def load_ca_foods_lgbm(start_day: int = 1000, paths: Paths = Paths()) -> tuple[p
     df = _add_d_int(df, "d", "d_int")
     df = df[df["d_int"] >= start_day]
 
+    # After filtering to CA + FOODS, these are constants; drop to match notebook behavior.
+    df = df.drop(columns=["cat_id", "state_id"])
+
+    # Keep identifier columns as categoricals (LightGBM requires non-object dtypes).
     cat_feats = ["id", "item_id", "dept_id", "store_id", "snap_CA"] + event_cols
     for col in cat_feats:
         df[col] = df[col].astype("category")
