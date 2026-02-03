@@ -6,7 +6,7 @@
 	run_local run_global \
 	run_local_lgbm run_local_nbeatsx run_global_lgbm run_global_nbeatsx \
 	show_local_lgbm show_local_nbeatsx show_global_lgbm show_global_nbeatsx \
-	smoke test lint format clean download_m5 verify_m5 repair_m5
+	doctor smoke test lint format clean download_m5 verify_m5 repair_m5
 
 PYTHON?=python
 
@@ -28,6 +28,7 @@ help:
 	"show_global_lgbm" "Print metrics/timing for last global LightGBM run" \
 	"show_global_nbeatsx" "Print metrics/timing for last global N-BEATSx run" \
 	"smoke" "Fast terminal-only smoke run (reduced compute)" \
+	"doctor" "Sanity-check env (imports + pip check + pytest)" \
 	"test" "Run pytest suite" \
 	"download_m5" "Download M5 CSVs into data/ via Kaggle" \
 	"verify_m5" "Verify required M5 CSVs exist and are real CSVs" \
@@ -120,6 +121,21 @@ smoke:
 	$(PYTHON) -m pip install -e .
 	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/smoke.toml --run-name smoke_local_lgbm local-lgbm
 	$(PYTHON) -m walmart_demand_forecasting.cli --config configs/smoke.toml --run-name smoke_local_nbeatsx local-nbeatsx
+
+doctor:
+	$(PYTHON) -m pip install -e .
+	$(PYTHON) -c "import lightgbm, optuna, neuralforecast, pytorch_lightning, torch, pandas, numpy; import walmart_demand_forecasting; print('imports_ok')"
+	@out=$$($(PYTHON) -m pip check 2>/dev/null || true); \
+	if [ -n "$$out" ]; then \
+		echo "pip check reported issues:"; \
+		echo "$$out"; \
+		if echo "$$out" | grep -q "^pipreqs "; then \
+			echo "NOTE: ignoring pipreqs-related mismatch (dev-only tool)."; \
+			out=$$(echo "$$out" | grep -v "^pipreqs "); \
+		fi; \
+		if [ -n "$$out" ]; then exit 1; fi; \
+	fi
+	$(PYTHON) -m pytest -q
 
 test:
 	$(PYTHON) -m pip install -e .
