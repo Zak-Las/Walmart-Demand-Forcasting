@@ -15,7 +15,14 @@ model_saves/
 logs/
 
 # Local artifacts (models, logs, runs)
-Artifacts/
+# Keep artifacts untracked by default, but allow committing lightweight run evidence
+# (metrics + timing) for portfolio review.
+Artifacts/*
+!Artifacts/runs/
+!Artifacts/runs/*/
+Artifacts/runs/*/*
+!Artifacts/runs/*/metrics_*.json
+!Artifacts/runs/*/timing.json
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
@@ -47,9 +54,6 @@ Thumbs.db
 *.ckpt
 
 # Exclude training artifacts and intermediate model directories
-artifacts/
-notebooks/artifacts/
-notebooks/lightning_logs/
 
 # Notebook training logs (case-sensitive paths)
 Notebooks/logs/
