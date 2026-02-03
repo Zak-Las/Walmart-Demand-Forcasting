@@ -113,6 +113,12 @@ conda activate Zak_Las_Env
 python -m pip install -e .
 ```
 
+Optional sanity check (recommended):
+
+```bash
+make doctor
+```
+
 3) Verify data is present:
 
 ```bash
@@ -135,6 +141,7 @@ Inside the container terminal:
 ```bash
 python -m pip install -e .
 make verify_m5
+make doctor
 ```
 
 Then run notebooks or CLI/Make repro as shown below.
@@ -156,6 +163,12 @@ Notes:
 ## Reproduce results (recruiter checklist)
 
 This section provides copy‑paste commands to reproduce all four models and inspect the artifacts produced by the CLI.
+
+Start with a single environment sanity check:
+
+```bash
+make doctor
+```
 
 ### Reproduce via `make` (fastest)
 
