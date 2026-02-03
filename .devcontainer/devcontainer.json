@@ -4,9 +4,10 @@
 		"dockerfile": "../Dockerfile",
 		"context": "..",
 		"args": {
-			"CONDA_ENV_NAME": "datascience_env"
+			"CONDA_ENV_NAME": "wdf"
 		}
 	},
+	"overrideCommand": true,
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -16,6 +17,6 @@
 		}
 	},
 	"forwardPorts": [8888],
-	"postCreateCommand": "echo 'Container created. Open a terminal and run your notebooks.'",
+	"postCreateCommand": "python -m pip install -e . && echo 'Container ready: editable install complete.'",
 	"remoteUser": "root"
 }
