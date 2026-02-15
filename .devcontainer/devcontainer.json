@@ -1,5 +1,5 @@
 {
-	"name": "Data Science Portfolio",
+	"name": "Dr Lasmar",
 	"build": {
 		"dockerfile": "../Dockerfile",
 		"context": "..",
@@ -18,5 +18,5 @@
 	},
 	"forwardPorts": [8888],
 	"postCreateCommand": "python -m pip install -e . && echo 'Container ready: editable install complete.'",
-	"remoteUser": "root"
+	"remoteUser": "mambauser"
 }
