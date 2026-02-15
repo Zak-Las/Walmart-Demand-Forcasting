@@ -22,7 +22,9 @@ def test_read_and_squeeze_downcasts_numeric_columns(tmp_path) -> None:
 
     assert out["int_col"].dtype == np.int8
     assert out["float_col"].dtype in (np.float16, np.float32)
-    assert out["text"].dtype == object
+    # Pandas can infer plain `object` strings or one of several string dtypes
+    # depending on version/config (notably in some Linux/devcontainer setups).
+    assert pd.api.types.is_object_dtype(out["text"]) or pd.api.types.is_string_dtype(out["text"])
 
 
 def test_read_and_squeeze_requires_string_filename(tmp_path) -> None:
