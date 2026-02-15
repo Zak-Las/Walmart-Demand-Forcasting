@@ -1,7 +1,6 @@
-# 1. Base Image: Pinning the version for reproducibility
-# Using a specific version of the miniconda3 image ensures that the build is reproducible.
-# The 'latest' tag can change, potentially breaking your build in the future.
-FROM continuumio/miniconda3:4.12.0
+# 1. Base Image
+# Use micromamba for faster, lower-memory solves in Dev Containers.
+FROM mambaorg/micromamba:1.5.8
 
 # 2. Metadata: Add labels to describe the image
 LABEL maintainer="Zak-Las"
@@ -18,17 +17,46 @@ WORKDIR $APP_HOME
 # Copy only the environment file first and install dependencies.
 # This leverages Docker's layer caching. The dependencies will only be re-installed
 # if the environment.yml file changes, not every time a project file is modified.
-COPY environment.devcontainer.yml /tmp/environment.devcontainer.yml
-RUN conda env create -f /tmp/environment.devcontainer.yml -n ${CONDA_ENV_NAME} \
-	&& conda clean -afy
+USER root
+
+# Minimal OS deps for common Python wheels on Debian/Ubuntu
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends \
+		make \
+		build-essential \
+		git \
+		libgomp1 \
+	&& rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /workspace \
+	&& chown -R mambauser:mambauser /workspace /opt/conda
+
+USER mambauser
+
+COPY --chown=mambauser:mambauser environment.devcontainer.yml /tmp/environment.devcontainer.yml
+RUN micromamba create -y -n ${CONDA_ENV_NAME} -f /tmp/environment.devcontainer.yml \
+	&& micromamba clean -a -y
 
 # 5. Copy Project Files: Add project files after dependency installation
-COPY . .
+COPY --chown=mambauser:mambauser . .
 
 # 6. Activate Conda Environment: Make the environment's tools available on the PATH
 # This makes it easy to run commands like 'python' or 'jupyter' directly.
-ENV PATH /opt/conda/envs/${CONDA_ENV_NAME}/bin:$PATH
+ENV PATH=/opt/conda/envs/${CONDA_ENV_NAME}/bin:$PATH
 ENV CONDA_DEFAULT_ENV=${CONDA_ENV_NAME}
+
+# Install pip-only runtime deps (pinned for reproducibility)
+RUN python -m pip install --no-cache-dir \
+	lightgbm==4.6.0 \
+	optuna==4.6.0 \
+	optuna-integration[lightgbm]==4.6.0 \
+	pytorch-lightning==2.5.5 \
+	torch==2.8.0 \
+	neuralforecast==3.1.2 \
+	rich==14.2.0 \
+	tqdm==4.67.1 \
+	tomli==2.4.0 \
+	kaggle==1.7.4.5
 
 # 7. Expose Port: Document the port used by Jupyter
 EXPOSE 8888
