@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - `CHANGELOG.md` following Keep a Changelog format.
 
 ### Notes
-This is the repo initialization prior to establishing a reliable `Prophet` baseline, deep learning models (LSTM), and probabilistic extensions.
+This is the repo initialization prior to establishing a reliable baseline, deep learning challenging model.
 
 ## [Unreleased]
 ### Added
