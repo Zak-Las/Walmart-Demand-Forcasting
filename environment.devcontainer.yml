@@ -2,6 +2,14 @@ name: wdf
 channels:
   - conda-forge
   - defaults
+
+# Dev Container environment (Linux-safe): keep the conda solve small to avoid
+# Docker Desktop memory exhaustion during image build.
+#
+# Heavy/runtime libraries are installed via pinned `pip install` in Dockerfile:
+# - lightgbm, optuna, neuralforecast, torch, pytorch-lightning, etc.
+#
+# This file is intentionally *not* a full lockfile.
 dependencies:
   - python=3.11
   - pip
@@ -18,15 +26,3 @@ dependencies:
   - scipy
   - matplotlib
   - seaborn
-  - pip:
-      # Core modeling stack (CPU-friendly in Linux containers)
-      - lightgbm==4.6.0
-      - optuna==4.6.0
-      - pytorch-lightning==2.5.5
-      - torch==2.8.0
-      - neuralforecast==3.1.2
-      # Misc
-      - rich==14.2.0
-      - tqdm==4.67.1
-      - tomli==2.4.0
-      - kaggle==1.7.4.5
