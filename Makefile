@@ -6,7 +6,7 @@
 	run_local run_global \
 	run_local_lgbm run_local_nbeatsx run_global_lgbm run_global_nbeatsx \
 	show_local_lgbm show_local_nbeatsx show_global_lgbm show_global_nbeatsx \
-	doctor smoke test lint format clean download_m5 verify_m5 repair_m5
+	prepare_deployment doctor smoke test lint format clean download_m5 verify_m5 repair_m5
 
 PYTHON?=python
 
@@ -27,6 +27,7 @@ help:
 	"show_local_nbeatsx" "Print metrics/timing for last local N-BEATSx run" \
 	"show_global_lgbm" "Print metrics/timing for last global LightGBM run" \
 	"show_global_nbeatsx" "Print metrics/timing for last global N-BEATSx run" \
+	"prepare_deployment" "Generate Lambda test payload artifacts" \
 	"smoke" "Fast terminal-only smoke run (reduced compute)" \
 	"doctor" "Sanity-check env (imports + pip check + pytest)" \
 	"test" "Run pytest suite" \
@@ -116,6 +117,9 @@ show_global_nbeatsx:
 	cat "$$f"; \
 	if [ -f "$$d/timing.json" ]; then echo "---"; echo "Timing: $$d/timing.json"; cat "$$d/timing.json"; fi; \
 	if [ -f "$$d/run_meta.json" ]; then echo "---"; echo "Run meta: $$d/run_meta.json"; cat "$$d/run_meta.json"; fi
+
+prepare_deployment:
+	$(PYTHON) deployment/prepare_deployment.py --config configs/global.toml --output-dir Artifacts/deployment
 
 smoke:
 	$(PYTHON) -m pip install -e .
