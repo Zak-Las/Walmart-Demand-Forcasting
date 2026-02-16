@@ -252,17 +252,33 @@ Notes:
 - `make test` runs `python -m pip install -e .` and then `python -m pytest -q` using the same interpreter.
 - Tests are designed to be lightweight (no full model training).
 
-## Artifacts
+## Deployment (AWS Lambda)
 
-Training logs and saved model artifacts live under `Artifacts/` (e.g., `Artifacts/logs/` and `Artifacts/model_saves/`).
-These are intentionally not committed to Git.
+The global N‑BEATSx model has been deployed as an **AWS Lambda** inference endpoint using the code under `deployment/`.
 
-## Planned next steps
+### Prepare a test payload
 
-- Expand unit test coverage (datasets + model helper edges).
-- Add CI to run `make test` + static checks on PRs.
-- Add a small “quick inference” demo that loads the saved models and generates a 28-day forecast without retraining.
-- Deploy the global N‑BEATSx inference path as a lightweight API (planned target: **AWS Lambda**, with model artifacts stored in object storage).
+Generate deployment artifacts (history slice + future exogenous + sample payload):
+
+```bash
+make prepare_deployment
+```
+
+This writes (by default) to `Artifacts/deployment/`, including:
+- `Artifacts/deployment/test_payload.json` (request payload)
+- `Artifacts/deployment/payload_meta.json` (repro/debug metadata)
+
+### Call the live endpoint
+
+```bash
+curl -X POST \
+	'<INSERT_LAMBDA_URL_FROM_RESUME_HERE>' \
+	-H 'Content-Type: application/json' \
+	-d @Artifacts/deployment/test_payload.json \
+	-o response.json
+```
+
+The file `response.json` at the repo root is a captured example response from this Lambda URL.
 
 ## Notes / limitations
 
@@ -276,6 +292,9 @@ This repo uses a **src-layout** installable package plus **notebook-first** narr
 	- `01_local_dynamics.ipynb`: Act 1 (local CA-FOODS baseline vs N-BEATSx)
 	- `02_global_scale.ipynb`: Act 2 (full-panel RAM-aware pipeline + global models)
 - `.devcontainer/`: Dev Container definition for 1-click VS Code setup
+- `deployment/`: deployment utilities + Lambda handler for global N‑BEATSx inference
+	- `prepare_deployment.py`: builds `Artifacts/deployment/*` payload artifacts
+	- `lambda/`: Lambda container code (handler + Dockerfile)
 - `src/walmart_demand_forecasting/`: reusable code (import as `walmart_demand_forecasting.*`)
 	- `datasets/m5_loaders.py`: M5 loaders (CA-FOODS + global) and `Paths` defaults
 	- `features/m5_features.py`: feature engineering (lags, rolling means, time features)
@@ -286,7 +305,9 @@ This repo uses a **src-layout** installable package plus **notebook-first** narr
 	- `visualization/`: plotting helpers (e.g., Lightning CSV learning curves)
 - `configs/`: run configs for CLI pipelines (`local.toml`, `global.toml`, `smoke.toml`)
 - `data/`: M5 dataset files (CSV)
-- `Artifacts/`: local artifacts (training logs + saved models; not tracked by Git)
+- `Artifacts/`: local artifacts (runs/models/logs + deployment payloads)
+	- `runs/`: per-run metrics, timing, metadata, predictions, and saved models
+	- `deployment/`: generated Lambda test payloads (e.g., `test_payload.json`)
 - `environment.yml`: conda environment definition (most runtime deps live here)
 - `pyproject.toml`: minimal packaging metadata for editable installs
 - `Makefile`: reproducible entrypoints (`run_*` and `show_*` targets)
