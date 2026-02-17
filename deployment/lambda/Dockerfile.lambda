@@ -1,0 +1,13 @@
+# Use Python 3.12 (Based on Amazon Linux 2023)
+FROM public.ecr.aws/lambda/python:3.12
+
+# Install CPU version of torch
+RUN pip install "torch>=2.2.0" --index-url https://download.pytorch.org/whl/cpu
+
+RUN pip install --only-binary :all: numpy==1.26.4 pandas==2.3.0 neuralforecast==3.1.2 scipy==1.16.1
+
+# Copy code and models
+COPY deployment/lambda/app.py ${LAMBDA_TASK_ROOT}
+COPY Artifacts/model_saves/NBEATSx/ ${LAMBDA_TASK_ROOT}/model/
+
+CMD [ "app.handler" ]

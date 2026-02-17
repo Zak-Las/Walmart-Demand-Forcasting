@@ -1,0 +1,28 @@
+name: wdf
+channels:
+  - conda-forge
+  - defaults
+
+# Dev Container environment (Linux-safe): keep the conda solve small to avoid
+# Docker Desktop memory exhaustion during image build.
+#
+# Heavy/runtime libraries are installed via pinned `pip install` in Dockerfile:
+# - lightgbm, optuna, neuralforecast, torch, pytorch-lightning, etc.
+#
+# This file is intentionally *not* a full lockfile.
+dependencies:
+  - python=3.11
+  - pip
+  - pytest
+  - ruff
+  - black
+  - ipykernel
+  - jupyterlab
+  - nbconvert
+  - numpy
+  - pandas
+  - pyarrow
+  - scikit-learn
+  - scipy
+  - matplotlib
+  - seaborn

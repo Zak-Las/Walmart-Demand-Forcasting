@@ -1,0 +1,7 @@
+{
+  "accelerator": "mps",
+  "alias": "NBEATSx_MQLoss_Local",
+  "horizon": 28,
+  "rmse": 2.6286034729826753,
+  "start_day": 1000
+}
