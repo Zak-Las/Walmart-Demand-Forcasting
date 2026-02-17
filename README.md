@@ -1,4 +1,5 @@
 # Walmart Demand Forecasting (M5)
+![Status](https://img.shields.io/badge/Built%20from-Scratch-brightgreen)
 
 Predict 28 days of daily item‑level demand using the M5 Forecasting dataset. This project is written as a portfolio-ready case study: start with a strong local baseline, then scale to a global model that learns shared patterns across ~30k series.
 
@@ -272,7 +273,7 @@ This writes (by default) to `Artifacts/deployment/`, including:
 
 ```bash
 curl -X POST \
-	'<INSERT_LAMBDA_URL_FROM_RESUME_HERE>' \
+	'<INSERT_LAMBDA_URL_AVAILABLE_UPON_REQUEST>' \
 	-H 'Content-Type: application/json' \
 	-d @Artifacts/deployment/test_payload.json \
 	-o response.json
